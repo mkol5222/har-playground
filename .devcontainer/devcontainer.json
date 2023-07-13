@@ -5,15 +5,11 @@
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"image": "mcr.microsoft.com/powershell:lts-debian-11",
 	"features": {
-		"ghcr.io/devcontainers/features/common-utils:2": {
-			"installZsh": "true",
-			"username": "vscode",
-			"upgradePackages": "false",
-			"nonFreePackages": "true"
-		}
+		"ghcr.io/devcontainers/features/common-utils:2": {},
+		"ghcr.io/devcontainers/features/dotnet:1": {}
 	},
 
-	"postCreateCommand": "sudo chsh vscode -s \"$(which pwsh)\"",
+	"postCreateCommand": "sudo chsh vscode -s \"$(which pwsh)\"; bash -c \"curl -s -L https://dot.net/v1/dotnet-install.sh | bash\"",
 
 	// Configure tool-specific properties.
 	"customizations": {
@@ -27,7 +23,8 @@
 			// Add the IDs of extensions you want installed when the container is created.
 			"extensions": [
 				"ms-vscode.powershell",
-				"ms-dotnettools.dotnet-interactive-vscode"
+				"ms-dotnettools.dotnet-interactive-vscode",
+				"ms-dotnettools.vscode-dotnet-pack"
 			]
 		}
 	}

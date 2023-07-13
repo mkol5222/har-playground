@@ -1,0 +1,71 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"},{"aliases":[],"languageName":"pwsh","name":"pwsh"}]}}
+
+#!markdown
+
+Put file to `data` folder and make sure filename is matching below:
+
+#!pwsh
+
+$harFile = './data/appsec-api.har';
+
+#!markdown
+
+Now we load HAR, which is basically JSON, into memory to process it later
+
+#!pwsh
+
+$harEntries = (gc $harFile | ConvertFrom-Json).log.entries
+
+#!markdown
+
+get idea about structure of entries
+
+#!pwsh
+
+$harEntries[0] | ConvertTo-Json -Depth 50
+
+#!pwsh
+
+$frequentUrls = $harEntries | % {  
+    [pscustomobject]@{ 
+        method = $_.request.method;
+        url = $_.request.url;
+    }
+} | Group-Object -NoElement  url | Sort-Object   -Descending count 
+
+$frequentUrls | ft -AutoSize
+
+#!pwsh
+
+$frequentUrls | ? { $_.count -gt 2 }
+
+#!markdown
+
+Lets focus on AppSec GraphQL traffic
+
+#!pwsh
+
+$gqlItems = $harEntries | ? { $_.request.method -eq 'POST' -and $_.request.url -eq 'https://cloudinfra-gw.portal.checkpoint.com/app/i2//graphql' }
+$gqlItems[0] | ConvertTo-Json -Depth 50
+
+#!pwsh
+
+$gqlQueries = $gqlItems | % {
+    $_.request.PostData.text | ConvertFrom-Json
+}
+$gqlQueries[0] | ConvertTo-Json -Depth 50
+
+#!pwsh
+
+$frequentGqlOps = $gqlQueries | select operationName | Group-Object -NoElement  operationName | sort-object -Descending count
+$frequentGqlOps | ft -AutoSize
+
+#!markdown
+
+Lets focus on new Asset creation arguments:
+
+#!pwsh
+
+$gqlQueries | ? { $_.operationName -eq 'newAssetByWizard' } | ConvertTo-Json -Depth 50 
